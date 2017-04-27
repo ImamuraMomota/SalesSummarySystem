@@ -216,9 +216,7 @@ public class SalesSummary {
 		//ファイル作成
 		//支店別集計ファイル
 		 try{
-			 File branchDetail = new File(args[0], "branch.out");
-			 FileWriter fwbranchDetail = new FileWriter(branchDetail);
-			 BufferedWriter bwbranchDetail = new BufferedWriter(fwbranchDetail);
+			 BufferedWriter bwbranchDetail = new BufferedWriter(new FileWriter(new File(args[0], "branch.out")));
 
 		//降順の作成
 			 List<Map.Entry<String,Long>> entries =  new ArrayList<>(branchSaleMap.entrySet());
@@ -274,11 +272,5 @@ public class SalesSummary {
 			 System.out.println("予期せぬエラーが発生しました");
 			 return;
 		 }
-
-
-
-
 	}
-
-
 }
