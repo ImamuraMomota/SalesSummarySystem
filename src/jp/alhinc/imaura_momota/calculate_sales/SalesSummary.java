@@ -60,9 +60,11 @@ public class SalesSummary {
 					return;
 				}
 			}
+
 		} catch(IOException error) {
 			System.out.println("支店定義ファイルが存在しません");
 			return;
+
 		} finally{
 			if(brBranchFile != null){
 				try{
@@ -78,8 +80,8 @@ public class SalesSummary {
 		HashMap<String,String> commodityMap = new HashMap<String, String>();
 		HashMap<String,Long> commoditySaleMap = new HashMap<String,Long>();
 		BufferedReader brCommodity = null;
-		try{
 
+		try{
 			//商品定義ファイルが存在しない場合（No.14）
 			File commodityFile = new File(args[0], "commodity.lst");
 			if(!commodityFile.exists()){
@@ -100,9 +102,11 @@ public class SalesSummary {
 					return;
 				}
 			}
+
 		} catch(IOException e){
 			System.out.println("商品定義ファイルが存在しません");
 			return;
+
 		} finally{
 			if(brCommodity != null){
 				try{
@@ -149,9 +153,6 @@ public class SalesSummary {
 
 		//ファイル展開
 		//読み込み時はディレクトリから指定する
-
-
-
 		try{
 			for(int i = 0; i < saleList.size(); i++){
 
@@ -165,7 +166,7 @@ public class SalesSummary {
 
 				//売上げファイルが2行以下の場合
 				if(branchNumber==null || commodityCode ==null ){
-					System.out.println("＜" + saleList.get(i).getName() + "＞のフォーマットが不正です");
+					System.out.println(saleList.get(i).getName());
 					brsaleList.close();
 					return;
 				}
@@ -175,13 +176,13 @@ public class SalesSummary {
 
 		//エラーの処理
 				if(!branchmap.containsKey(branchNumber)){
-					System.out.println("＜"+ saleList.get(i).getName() + "＞の支店コードが不正です");
+					System.out.println(saleList.get(i).getName());
 					brsaleList.close();
 					return;
 				}
 
 				if(! commodityMap.containsKey(commodityCode)){
-					System.out.println("＜"+ saleList.get(i).getName() + "＞の商品コードが不正です");
+					System.out.println(saleList.get(i).getName());
 					brsaleList.close();
 					return;
 				}
@@ -189,7 +190,7 @@ public class SalesSummary {
 
 				//売上げファイルの中身が4行以上ある場合(No.11)
 				if(muda != null){
-					System.out.println("＜"+ saleList.get(i).getName() + "＞のフォーマットが不正です");
+					System.out.println(saleList.get(i).getName());
 					brsaleList.close();
 					return;
 				}
@@ -217,13 +218,12 @@ public class SalesSummary {
 		}
 
 		//集計結果出力
-
-		//ファイル作成
 		//支店別集計ファイル
+		BufferedWriter bwbranchDetail = null;
 		 try{
-			 BufferedWriter bwbranchDetail = new BufferedWriter(new FileWriter(new File(args[0], "branch.out")));
+			 bwbranchDetail = new BufferedWriter(new FileWriter(new File(args[0], "branch.out")));
 
-		//降順の作成
+			 //降順の作成
 			 List<Map.Entry<String,Long>> entries =  new ArrayList<>(branchSaleMap.entrySet());
 			 Collections.sort(entries, new Comparator<Map.Entry<String,Long>>() {
 
@@ -232,25 +232,33 @@ public class SalesSummary {
 				 }
 			 });
 
-		//書き込み
+			 //書き込み
 			 for (Entry<String,Long> s : entries) {
 				 bwbranchDetail.write(s.getKey() + "," + branchmap.get(s.getKey()) + "," + s.getValue());
 				 bwbranchDetail.newLine();
 			 }
 
-			 bwbranchDetail.close();
 		 } catch(IOException e){
 			 System.out.println("予期せぬエラーが発生しました");
 			 return;
+
+		 } finally{
+			 if(bwbranchDetail != null){
+				 try{
+					 bwbranchDetail.close();
+				 } catch(IOException e) {
+					 e.printStackTrace();
+				 }
+			 }
 		 }
 
 
 		//商品集計ファイル
+		 BufferedWriter bwcommodityDetail = null;
 		 try{
-			 BufferedWriter bwcommodityDetail = new BufferedWriter(new FileWriter(new File(args[0], "commodity.out")));
+			 bwcommodityDetail = new BufferedWriter(new FileWriter(new File(args[0], "commodity.out")));
 
-
-		//降順の作成
+			 //降順の作成
 			 List<Map.Entry<String,Long>> entries =  new ArrayList<>(commoditySaleMap.entrySet());
 			 Collections.sort(entries, new Comparator<Map.Entry<String,Long>>() {
 
@@ -259,16 +267,24 @@ public class SalesSummary {
 				 }
 			 });
 
-		//書き込み
+			 //書き込み
 			 for (Entry<String,Long> str : entries) {
 				 bwcommodityDetail.write(str.getKey() + "," + commodityMap.get(str.getKey()) + "," + str.getValue());
 				 bwcommodityDetail.newLine();
 			 }
 
-			 bwcommodityDetail.close();
 		 } catch(IOException e){
 			 System.out.println("予期せぬエラーが発生しました");
 			 return;
+
+		 } finally {
+			 if(bwcommodityDetail != null){
+				 try{
+					 bwcommodityDetail.close();
+				 }catch(IOException e){
+					 e.printStackTrace();
+				 }
+			 }
 		 }
 	}
 }
