@@ -22,27 +22,25 @@ public class SalesSummary {
 	public static void main (String[]args){
 
 		//コマンドライン引数のエラー処理（No1.No.2)
-		if(args[0]== null || args.length >= 2){
-			System.out.println("予期せぬエラーが発生しました");
-			return;
-		}
+//		if(args[0]== null || args.length >= 2){
+//			System.out.println("予期せぬエラーが発生しました");
+//			return;
+//		}
 
 
 		//支店定義ファイル読み込み
 		HashMap<String, String> branchmap = new HashMap<String, String>();
 		HashMap<String, Long> branchSaleMap = new HashMap<String, Long>();
+		BufferedReader brBranchFile = null;
 
 		try{
 			File branchFile = new File(args[0], "branch.lst");
-
 			//エラー処理（No.3）
 			if(!branchFile.exists()){
 				System.out.println("支店定義ファイルが存在しません");
 				return;
 			}
-
-			FileReader frBranchFile = new FileReader(branchFile);
-			BufferedReader brBranchFile = new BufferedReader(frBranchFile);
+			brBranchFile = new BufferedReader(new FileReader(branchFile));
 			String branchCode;
 			while((branchCode = brBranchFile.readLine()) != null){
 				String[] branch = branchCode.split(",");
@@ -62,16 +60,24 @@ public class SalesSummary {
 					return;
 				}
 			}
-			brBranchFile.close();
 		} catch(IOException error) {
 			System.out.println("支店定義ファイルが存在しません");
 			return;
+		} finally{
+			if(brBranchFile != null){
+				try{
+					brBranchFile.close();
+				} catch(IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 
 
 		//商品定義ファイル読み込み
 		HashMap<String,String> commodityMap = new HashMap<String, String>();
 		HashMap<String,Long> commoditySaleMap = new HashMap<String,Long>();
+		BufferedReader brCommodity = null;
 		try{
 
 			//商品定義ファイルが存在しない場合（No.14）
@@ -80,10 +86,9 @@ public class SalesSummary {
 				System.out.println("商品定義ファイルが存在しません");
 				return;
 			}
-			FileReader frCommodityFile = new FileReader(commodityFile);
-			BufferedReader brCommodityFile = new BufferedReader(frCommodityFile);
+			brCommodity = new BufferedReader(new FileReader(commodityFile));
 			String commodityCode;
-			while((commodityCode = brCommodityFile.readLine()) != null){
+			while((commodityCode = brCommodity.readLine()) != null){
 				String[] commodity = commodityCode.split(",");
 
 				commodityMap.put(commodity[0],commodity[1]);
@@ -95,11 +100,17 @@ public class SalesSummary {
 					return;
 				}
 			}
-
-			brCommodityFile.close();
 		} catch(IOException e){
 			System.out.println("商品定義ファイルが存在しません");
 			return;
+		} finally{
+			if(brCommodity != null){
+				try{
+					brCommodity.close();
+				} catch(IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 
 		//集計
@@ -117,7 +128,6 @@ public class SalesSummary {
 		for(int i = 0; i< saleCode.length; i++){
 			if (saleCode[i].getName().matches("^[0-9]{8}.rcd$")){
 				saleList.add (saleCode[i]);
-				System.out.println(saleList.get(i).getName());
 			}
 		}
 
@@ -187,14 +197,11 @@ public class SalesSummary {
 				Long branchTotalAmount;
 				Long commodityTotalAmount;
 
-
 				branchTotalAmount = amount + branchSaleMap.get(branchNumber);
-				System.out.println("支店別売上集計は" + branchTotalAmount);
 				//マップに返す作業
 				branchSaleMap.put(branchNumber, branchTotalAmount);
 
 				commodityTotalAmount = amount + commoditySaleMap.get(commodityCode);
-				System.out.println("商品別売上集計は" + commodityTotalAmount);
 				//マップに返す作業
 				commoditySaleMap.put(commodityCode, commodityTotalAmount);
 
@@ -204,8 +211,6 @@ public class SalesSummary {
 					return;
 				}
 				brsaleList.close();
-
-				System.out.println(branchNumber + "," + branchmap.get(branchNumber) + "," +  branchTotalAmount);
 			}
 		}catch(IOException e){
 			return;
@@ -229,9 +234,6 @@ public class SalesSummary {
 
 		//書き込み
 			 for (Entry<String,Long> s : entries) {
-				 System.out.println("s.getKey() : " + s.getKey());
-				 System.out.println("s.getValue() : " + s.getValue());
-
 				 bwbranchDetail.write(s.getKey() + "," + branchmap.get(s.getKey()) + "," + s.getValue());
 				 bwbranchDetail.newLine();
 			 }
@@ -245,9 +247,8 @@ public class SalesSummary {
 
 		//商品集計ファイル
 		 try{
-			 File commodityDetail = new File(args[0], "commodity.out");
-			 FileWriter fwcommodityDetail = new FileWriter(commodityDetail);
-			 BufferedWriter bwcommodityDetail = new BufferedWriter(fwcommodityDetail);
+			 BufferedWriter bwcommodityDetail = new BufferedWriter(new FileWriter(new File(args[0], "coodity.out")));
+
 
 		//降順の作成
 			 List<Map.Entry<String,Long>> entries =  new ArrayList<>(commoditySaleMap.entrySet());
@@ -260,9 +261,6 @@ public class SalesSummary {
 
 		//書き込み
 			 for (Entry<String,Long> str : entries) {
-				 System.out.println("str.getKey() : " + str.getKey());
-				 System.out.println("str.getValue() : " + str.getValue());
-
 				 bwcommodityDetail.write(str.getKey() + "," + commodityMap.get(str.getKey()) + "," + str.getValue());
 				 bwcommodityDetail.newLine();
 			 }
