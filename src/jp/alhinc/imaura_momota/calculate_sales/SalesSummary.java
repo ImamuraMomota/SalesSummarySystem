@@ -124,15 +124,14 @@ public class SalesSummary {
 		//rcd拡張子の取得
 		File salesFile = new File(args[0]);
 		//連番チェック（No.24-No.27）
-		if(! salesFile.isDirectory()){
-			System.out.println("売上げファイルが連番になっていません");
-			return;
-		}
 
 		File[] saleCode = salesFile.listFiles();
 		ArrayList<File> saleList = new ArrayList<File>();
 		for(int i = 0; i< saleCode.length; i++){
-			if (saleCode[i].getName().matches("^[0-9]{8}.rcd$")){
+			if(!saleCode[i].isFile()){
+				System.out.println("売上げファイル名が連番になっていません");
+				return;
+			}else if(saleCode[i].getName().matches("^[0-9]{8}.rcd$")){
 				saleList.add (saleCode[i]);
 			}
 		}
@@ -166,7 +165,7 @@ public class SalesSummary {
 
 				//売上げファイルが2行以下の場合
 				if(branchNumber==null || commodityCode ==null ){
-					System.out.println(saleList.get(i).getName() + "の商品コードが不正です");
+					System.out.println(saleList.get(i).getName() + "のフォーマットが不正です");
 					brsaleList.close();
 					return;
 				}
@@ -181,7 +180,7 @@ public class SalesSummary {
 
 				//エラーの処理
 				if(!branchmap.containsKey(branchNumber)){
-					System.out.println(saleList.get(i).getName() + "の商品コードが不正です");
+					System.out.println(saleList.get(i).getName() + "の支店コードが不正です");
 					return;
 				}
 
@@ -193,7 +192,7 @@ public class SalesSummary {
 
 				//売上げファイルの中身が4行以上ある場合(No.11)
 				if(muda != null){
-					System.out.println(saleList.get(i).getName() + "の商品コードが不正です");
+					System.out.println(saleList.get(i).getName() + "のフォーマットが不正です");
 					return;
 				}
 
