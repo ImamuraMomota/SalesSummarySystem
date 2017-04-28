@@ -70,7 +70,7 @@ public class SalesSummary {
 				try{
 					brBranchFile.close();
 				} catch(IOException e) {
-					e.printStackTrace();
+					System.out.println("予期せぬエラーが発生しました");
 				}
 			}
 		}
@@ -93,14 +93,16 @@ public class SalesSummary {
 			while((commodityCode = brCommodity.readLine()) != null){
 				String[] commodity = commodityCode.split(",");
 
-				commodityMap.put(commodity[0],commodity[1]);
-				commoditySaleMap.put(commodity[0],0L);
 
 				//商品コードエラー（No.15-No.22）
 				if(!commodity[0].matches("^[A-Za-z0-9]{8}$")||commodity.length != 2){
 					System.out.println("商品定義ファイルのフォーマットが不正です");
 					return;
 				}
+
+				commodityMap.put(commodity[0],commodity[1]);
+				commoditySaleMap.put(commodity[0],0L);
+
 			}
 
 		} catch(IOException e){
@@ -112,7 +114,7 @@ public class SalesSummary {
 				try{
 					brCommodity.close();
 				} catch(IOException e) {
-					e.printStackTrace();
+					System.out.println("予期せぬエラーが発生しました");
 				}
 			}
 		}
@@ -139,12 +141,11 @@ public class SalesSummary {
 		String saleListMax;
 		String saleListMin;
 
-		saleListMax = saleList.get(0).getName().substring(0,8);
-		saleListMin = saleList.get(saleList.size()-1).getName().substring(0,8);
+		saleListMin = saleList.get(0).getName().substring(0,8);
+		saleListMax = saleList.get(saleList.size()-1).getName().substring(0,8);
 
-		int Min = Integer.parseInt(saleListMax);
-		int Max = Integer.parseInt(saleListMin);
-
+		int Min = Integer.parseInt(saleListMin);
+		int Max = Integer.parseInt(saleListMax);
 
 		if((Max - Min +1) != saleList.size()){
 			System.out.println("売り上げファイル名が連番になっていません");
@@ -153,56 +154,57 @@ public class SalesSummary {
 
 		//ファイル展開
 		//読み込み時はディレクトリから指定する
+		BufferedReader brsaleList = null;
 		try{
 			for(int i = 0; i < saleList.size(); i++){
 
 				File file = new File(args[0], saleList.get(i).getName());
-				FileReader frsaleList = new FileReader(file);
-				BufferedReader brsaleList = new BufferedReader(frsaleList);
-
-		//4回readLineを回す
+				brsaleList = new BufferedReader(new FileReader(file));
+				//4回readLineを回す
 				String branchNumber = brsaleList.readLine();
 				String commodityCode = brsaleList.readLine();
 
 				//売上げファイルが2行以下の場合
 				if(branchNumber==null || commodityCode ==null ){
-					System.out.println(saleList.get(i).getName());
+					System.out.println(saleList.get(i).getName() + "の商品コードが不正です");
 					brsaleList.close();
 					return;
 				}
 
-				Long amount =Long.parseLong(brsaleList.readLine());
+				String amount = brsaleList.readLine();
+				if (!amount.matches("^\\d{1,10}$")){
+					System.out.println("予期せぬエラーが発生しました");
+					return;
+				}
+				Long amountNum =Long.parseLong(amount);
 				String muda = brsaleList.readLine();
 
-		//エラーの処理
+				//エラーの処理
 				if(!branchmap.containsKey(branchNumber)){
-					System.out.println(saleList.get(i).getName());
-					brsaleList.close();
+					System.out.println(saleList.get(i).getName() + "の商品コードが不正です");
 					return;
 				}
 
 				if(! commodityMap.containsKey(commodityCode)){
-					System.out.println(saleList.get(i).getName());
-					brsaleList.close();
+					System.out.println(saleList.get(i).getName() + "の商品コードが不正です");
 					return;
 				}
 
 
 				//売上げファイルの中身が4行以上ある場合(No.11)
 				if(muda != null){
-					System.out.println(saleList.get(i).getName());
-					brsaleList.close();
+					System.out.println(saleList.get(i).getName() + "の商品コードが不正です");
 					return;
 				}
 
 				Long branchTotalAmount;
 				Long commodityTotalAmount;
 
-				branchTotalAmount = amount + branchSaleMap.get(branchNumber);
+				branchTotalAmount = amountNum + branchSaleMap.get(branchNumber);
 				//マップに返す作業
 				branchSaleMap.put(branchNumber, branchTotalAmount);
 
-				commodityTotalAmount = amount + commoditySaleMap.get(commodityCode);
+				commodityTotalAmount = amountNum + commoditySaleMap.get(commodityCode);
 				//マップに返す作業
 				commoditySaleMap.put(commodityCode, commodityTotalAmount);
 
@@ -211,10 +213,19 @@ public class SalesSummary {
 					brsaleList.close();
 					return;
 				}
-				brsaleList.close();
 			}
-		}catch(IOException e){
+
+		} catch(IOException e){
 			return;
+
+		} finally{
+			try{
+				if(brsaleList != null){
+					brsaleList.close();
+				}
+			} catch(IOException e){
+				System.out.println("予期せぬエラーが発生しました");
+			}
 		}
 
 		//集計結果出力
@@ -247,7 +258,7 @@ public class SalesSummary {
 				 try{
 					 bwbranchDetail.close();
 				 } catch(IOException e) {
-					 e.printStackTrace();
+					 System.out.println("予期せぬエラーが発生しました");
 				 }
 			 }
 		 }
@@ -282,7 +293,7 @@ public class SalesSummary {
 				 try{
 					 bwcommodityDetail.close();
 				 }catch(IOException e){
-					 e.printStackTrace();
+					 System.out.println("予期せぬエラーが発生しました");
 				 }
 			 }
 		 }
