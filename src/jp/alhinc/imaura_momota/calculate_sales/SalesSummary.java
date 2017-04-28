@@ -22,10 +22,10 @@ public class SalesSummary {
 	public static void main (String[]args){
 
 		//コマンドライン引数のエラー処理（No1.No.2)
-//		if(args[0]== null || args.length >= 2){
-//			System.out.println("予期せぬエラーが発生しました");
-//			return;
-//		}
+		if(args.length != 1 ){
+			System.out.println("予期せぬエラーが発生しました");
+			return;
+		}
 
 
 		//支店定義ファイル読み込み
@@ -247,7 +247,7 @@ public class SalesSummary {
 
 		//商品集計ファイル
 		 try{
-			 BufferedWriter bwcommodityDetail = new BufferedWriter(new FileWriter(new File(args[0], "coodity.out")));
+			 BufferedWriter bwcommodityDetail = new BufferedWriter(new FileWriter(new File(args[0], "commodity.out")));
 
 
 		//降順の作成
