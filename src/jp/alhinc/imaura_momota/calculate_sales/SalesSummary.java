@@ -115,13 +115,11 @@ public class SalesSummary {
 
 				Long branchTotalAmount;
 				Long commodityTotalAmount;
-
+				//Mapに返す
 				branchTotalAmount = amountNum + branchSaleMap.get(branchCode);
-				//マップに返す作業
 				branchSaleMap.put(branchCode, branchTotalAmount);
 
 				commodityTotalAmount = amountNum + commoditySaleMap.get(commodityCode);
-				//マップに返す作業
 				commoditySaleMap.put(commodityCode, commodityTotalAmount);
 
 				if(!branchTotalAmount.toString().matches("^\\d{1,10}$")||!commodityTotalAmount.toString().matches("^\\d{1,10}$")){
