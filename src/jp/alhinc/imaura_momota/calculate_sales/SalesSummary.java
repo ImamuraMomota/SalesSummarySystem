@@ -34,21 +34,19 @@ public class SalesSummary {
 		HashMap<String,Long> commoditySaleMap = new HashMap<String,Long>();
 
 		//支店定義ファイル読み込み
-		if(!FileRead(args[0], "branch.lst", "支店","^[0-9]{3}$", branchMap, branchSaleMap)){
+		if(!fileRead(args[0], "branch.lst", "支店","^[0-9]{3}$", branchMap, branchSaleMap)){
 			return ;
 		}
 
 		//商品定義ファイル読み込み
-		if(!FileRead(args[0],"commodity.lst", "商品","^[A-Za-z0-9]{8}$", commodityMap, commoditySaleMap)){
+		if(!fileRead(args[0],"commodity.lst", "商品","^[A-Za-z0-9]{8}$", commodityMap, commoditySaleMap)){
 			return ;
 		}
 
 		//集計
 		//売り上げファイル
-		//rcd拡張子の取得
+		//rcd拡張子の取得・連番チェック（No.24-No.27）
 		File salesFile = new File(args[0]);
-		//連番チェック（No.24-No.27）
-
 		File[] saleCode = salesFile.listFiles();
 		ArrayList<File> saleList = new ArrayList<File>();
 		for(int i = 0; i< saleCode.length; i++){
@@ -84,7 +82,7 @@ public class SalesSummary {
 				String branchCode = brsaleList.readLine();
 				String commodityCode = brsaleList.readLine();
 				String amount = brsaleList.readLine();
-				String ExceptionCode = brsaleList.readLine();
+				String exceptionCode = brsaleList.readLine();
 
 				//売上げファイルが2行以下の場合
 				if(branchCode==null || commodityCode ==null ){
@@ -110,7 +108,7 @@ public class SalesSummary {
 				}
 
 				//売上げファイルの中身が4行以上ある場合(No.11)
-				if(ExceptionCode != null){
+				if(exceptionCode != null){
 					System.out.println(saleList.get(i).getName() + "のフォーマットが不正です");
 					return;
 				}
@@ -143,22 +141,23 @@ public class SalesSummary {
 				}
 			} catch(IOException e){
 				System.out.println("予期せぬエラーが発生しました");
+				return ;
 			}
 		}
 
 		//集計結果出力
 		//支店別集計ファイル
-		if(!FileOut(args[0],"branch.out",branchMap,branchSaleMap)){
+		if(!fileOut(args[0],"branch.out",branchMap,branchSaleMap)){
 			return;
 		}
 
 		//商品集計ファイル出力
-		if(!FileOut(args[0],"commodity.out",commodityMap,commoditySaleMap)){
+		if(!fileOut(args[0],"commodity.out",commodityMap,commoditySaleMap)){
 			return;
 		}
 	}
 
-	public static boolean FileRead(String dirPath, String fileName, String errorWord, String code,
+	public static boolean fileRead(String dirPath, String fileName, String errorWord, String code,
 	HashMap<String, String>names, HashMap<String, Long>sales){
 		BufferedReader brBranchCommodityFile = null;
 		try{
@@ -181,8 +180,6 @@ public class SalesSummary {
 
 				names.put(branch[0], branch[1]);
 				sales.put(branch[0],0L);
-
-
 			}
 
 		} catch(IOException error) {
@@ -195,6 +192,7 @@ public class SalesSummary {
 					brBranchCommodityFile.close();
 				} catch(IOException e) {
 					System.out.println("予期せぬエラーが発生しました");
+					return false ;
 				}
 			}
 		}
@@ -203,7 +201,7 @@ public class SalesSummary {
 
 
 
-	public static boolean FileOut(String dirPath, String fileName, HashMap<String, String>names, HashMap<String, Long>sales){
+	public static boolean fileOut(String dirPath, String fileName, HashMap<String, String>names, HashMap<String, Long>sales){
 		BufferedWriter bwbranchDetail = null;
 		 try{
 			 bwbranchDetail = new BufferedWriter(new FileWriter(new File(dirPath, fileName)));
@@ -233,6 +231,7 @@ public class SalesSummary {
 					 bwbranchDetail.close();
 				 } catch(IOException e) {
 					 System.out.println("予期せぬエラーが発生しました");
+					 return false ;
 				 }
 			 }
 		 }
