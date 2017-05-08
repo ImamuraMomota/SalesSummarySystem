@@ -28,18 +28,18 @@ public class SalesSummary {
 		}
 
 		//HashMapの作成
-		HashMap<String, String> branchmap = new HashMap<String, String>();
+		HashMap<String, String> branchMap = new HashMap<String, String>();
 		HashMap<String, Long> branchSaleMap = new HashMap<String, Long>();
 		HashMap<String,String> commodityMap = new HashMap<String, String>();
 		HashMap<String,Long> commoditySaleMap = new HashMap<String,Long>();
 
 		//支店定義ファイル読み込み
-		if(!branchFileRead(args[0], "branch.lst", branchmap, branchSaleMap)){
+		if(!FileRead(args[0], "branch.lst", "支店","^[0-9]{3}$", branchMap, branchSaleMap)){
 			return ;
 		}
 
 		//商品定義ファイル読み込み
-		if(!commodityFileRead(args[0],"commodity.lst",commodityMap, commoditySaleMap)){
+		if(!FileRead(args[0],"commodity.lst", "商品","^[A-Za-z0-9]{8}$", commodityMap, commoditySaleMap)){
 			return ;
 		}
 
@@ -81,26 +81,25 @@ public class SalesSummary {
 				File file = new File(args[0], saleList.get(i).getName());
 				brsaleList = new BufferedReader(new FileReader(file));
 				//4回readLineを回す
-				String branchNumber = brsaleList.readLine();
+				String branchCode = brsaleList.readLine();
 				String commodityCode = brsaleList.readLine();
+				String amount = brsaleList.readLine();
+				String ExceptionCode = brsaleList.readLine();
 
 				//売上げファイルが2行以下の場合
-				if(branchNumber==null || commodityCode ==null ){
+				if(branchCode==null || commodityCode ==null ){
 					System.out.println(saleList.get(i).getName() + "のフォーマットが不正です");
-					brsaleList.close();
 					return;
 				}
 
-				String amount = brsaleList.readLine();
-				if (!amount.matches("^\\d{1,10}$")){
+				if (amount == null || !amount.matches("^\\d{1,10}$")){
 					System.out.println("予期せぬエラーが発生しました");
 					return;
 				}
 				Long amountNum =Long.parseLong(amount);
-				String muda = brsaleList.readLine();
 
 				//エラーの処理
-				if(!branchmap.containsKey(branchNumber)){
+				if(!branchMap.containsKey(branchCode)){
 					System.out.println(saleList.get(i).getName() + "の支店コードが不正です");
 					return;
 				}
@@ -110,9 +109,8 @@ public class SalesSummary {
 					return;
 				}
 
-
 				//売上げファイルの中身が4行以上ある場合(No.11)
-				if(muda != null){
+				if(ExceptionCode != null){
 					System.out.println(saleList.get(i).getName() + "のフォーマットが不正です");
 					return;
 				}
@@ -120,9 +118,9 @@ public class SalesSummary {
 				Long branchTotalAmount;
 				Long commodityTotalAmount;
 
-				branchTotalAmount = amountNum + branchSaleMap.get(branchNumber);
+				branchTotalAmount = amountNum + branchSaleMap.get(branchCode);
 				//マップに返す作業
-				branchSaleMap.put(branchNumber, branchTotalAmount);
+				branchSaleMap.put(branchCode, branchTotalAmount);
 
 				commodityTotalAmount = amountNum + commoditySaleMap.get(commodityCode);
 				//マップに返す作業
@@ -150,7 +148,7 @@ public class SalesSummary {
 
 		//集計結果出力
 		//支店別集計ファイル
-		if(!FileOut(args[0],"branch.out",branchmap,branchSaleMap)){
+		if(!FileOut(args[0],"branch.out",branchMap,branchSaleMap)){
 			return;
 		}
 
@@ -160,34 +158,31 @@ public class SalesSummary {
 		}
 	}
 
-	public static boolean branchFileRead(String dirPath, String fileName,  HashMap<String, String>names, HashMap<String, Long>sales){
-		BufferedReader brBranchFile = null;
+	public static boolean FileRead(String dirPath, String fileName, String errorWord, String code,
+	HashMap<String, String>names, HashMap<String, Long>sales){
+		BufferedReader brBranchCommodityFile = null;
 		try{
-			File branchFile = new File(dirPath, fileName);
-			//エラー処理（No.3）
-			if(!branchFile.exists()){
-				System.out.println("支店定義ファイルが存在しません");
+			File branchCommodityFile = new File(dirPath, fileName);
+			//エラー処理（No.3,No.14）
+			if(!branchCommodityFile.exists()){
+				System.out.println(errorWord + "定義ファイルが存在しません");
 				return false;
 			}
-			brBranchFile = new BufferedReader(new FileReader(branchFile));
-			String branchCode;
-			while((branchCode = brBranchFile.readLine()) != null){
-				String[] branch = branchCode.split(",");
+			brBranchCommodityFile = new BufferedReader(new FileReader(branchCommodityFile));
+			String branchCommodityCode;
+			while((branchCommodityCode = brBranchCommodityFile.readLine()) != null){
+				String[] branch = branchCommodityCode.split(",");
 
-				//支店コードエラー（No.5-No.9）
-				if(branch.length <= 1 || branch.length >= 3){
-					System.out.println("支店定義ファイルのフォーマットが不正です");
+				//支店・商品コードエラー（No.4-No.22）
+				if (!branch[0].matches(code)|| branch.length != 2){
+					System.out.println(errorWord + "定義ファイルのフォーマットが不正です");
 					return false;
 				}
 
 				names.put(branch[0], branch[1]);
 				sales.put(branch[0],0L);
 
-				//支店コードエラー（No.10-No.13）
-				if (!branch[0].matches("^[0-9]{3}$")|| branch.length != 2){
-					System.out.println("支店定義ファイルのフォーマットが不正です");
-					return false;
-				}
+
 			}
 
 		} catch(IOException error) {
@@ -195,9 +190,9 @@ public class SalesSummary {
 			return false;
 
 		} finally{
-			if(brBranchFile != null){
+			if(brBranchCommodityFile != null){
 				try{
-					brBranchFile.close();
+					brBranchCommodityFile.close();
 				} catch(IOException e) {
 					System.out.println("予期せぬエラーが発生しました");
 				}
@@ -206,48 +201,7 @@ public class SalesSummary {
 		return true;
 	}
 
-	public static boolean commodityFileRead(String dirPath, String fileName, HashMap<String, String>names, HashMap<String, Long>sales){
-		BufferedReader brCommodity = null;
 
-		try{
-			//商品定義ファイルが存在しない場合（No.14）
-			File commodityFile = new File(dirPath, fileName);
-			if(!commodityFile.exists()){
-				System.out.println("商品定義ファイルが存在しません");
-				return false;
-			}
-			brCommodity = new BufferedReader(new FileReader(commodityFile));
-			String commodityCode;
-			while((commodityCode = brCommodity.readLine()) != null){
-				String[] commodity = commodityCode.split(",");
-
-
-				//商品コードエラー（No.15-No.22）
-				if(!commodity[0].matches("^[A-Za-z0-9]{8}$")||commodity.length != 2){
-					System.out.println("商品定義ファイルのフォーマットが不正です");
-					return false;
-				}
-
-				names.put(commodity[0],commodity[1]);
-				sales.put(commodity[0],0L);
-
-			}
-
-		} catch(IOException e){
-			System.out.println("商品定義ファイルが存在しません");
-			return false;
-
-		} finally{
-			if(brCommodity != null){
-				try{
-					brCommodity.close();
-				} catch(IOException e) {
-					System.out.println("予期せぬエラーが発生しました");
-				}
-			}
-		}
-		return true;
-	}
 
 	public static boolean FileOut(String dirPath, String fileName, HashMap<String, String>names, HashMap<String, Long>sales){
 		BufferedWriter bwbranchDetail = null;
