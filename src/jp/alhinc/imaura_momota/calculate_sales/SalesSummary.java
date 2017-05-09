@@ -85,7 +85,6 @@ public class SalesSummary {
 				String commodityCode = brsaleList.readLine();
 				String amount = brsaleList.readLine();
 				String exceptionCode = brsaleList.readLine();
-
 				//売上げファイルが2行以下の場合
 				if(branchCode == null || commodityCode == null || amount == null || amount.equals("")){
 					System.out.println(saleList.get(i).getName() + "のフォーマットが不正です");
@@ -94,7 +93,7 @@ public class SalesSummary {
 
 				if (!amount.matches("^\\d{1,10}$")){
 					System.out.println("予期せぬエラーが発生しました");
-					System.out.println(amount);
+
 					return;
 				}
 				Long amountNum = Long.parseLong(amount);
@@ -131,6 +130,7 @@ public class SalesSummary {
 			}
 
 		} catch(IOException e){
+			System.out.println("予期せぬエラーが発生しました");
 			return;
 
 		} finally{
