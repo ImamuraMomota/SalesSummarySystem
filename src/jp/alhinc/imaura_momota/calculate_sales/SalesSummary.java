@@ -87,13 +87,14 @@ public class SalesSummary {
 				String exceptionCode = brsaleList.readLine();
 
 				//売上げファイルが2行以下の場合
-				if(branchCode == null || commodityCode == null ){
+				if(branchCode == null || commodityCode == null || amount == null ){
 					System.out.println(saleList.get(i).getName() + "のフォーマットが不正です");
 					return;
 				}
 
-				if (amount == null || !amount.matches("^\\d{1,10}$")){
+				if (!amount.matches("^\\d{1,10}$")){
 					System.out.println("予期せぬエラーが発生しました");
+					System.out.println(amount);
 					return;
 				}
 				Long amountNum = Long.parseLong(amount);
