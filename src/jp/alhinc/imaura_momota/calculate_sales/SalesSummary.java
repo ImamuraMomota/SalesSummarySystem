@@ -93,7 +93,6 @@ public class SalesSummary {
 
 				if (!amount.matches("^\\d{1,10}$")){
 					System.out.println("予期せぬエラーが発生しました");
-
 					return;
 				}
 				Long amountNum = Long.parseLong(amount);
