@@ -67,7 +67,7 @@ public class SalesSummary {
 		int Min = Integer.parseInt(saleListMin);
 		int Max = Integer.parseInt(saleListMax);
 
-		if((Max - Min +1) != saleList.size()){
+		if((Max-Min +1) != saleList.size()){
 			System.out.println("売上ファイル名が連番になっていません");
 			return;
 		}
