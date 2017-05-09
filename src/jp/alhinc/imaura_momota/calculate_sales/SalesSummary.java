@@ -87,7 +87,7 @@ public class SalesSummary {
 				String exceptionCode = brsaleList.readLine();
 
 				//売上げファイルが2行以下の場合
-				if(branchCode == null || commodityCode == null || amount == null ){
+				if(branchCode == null || commodityCode == null || amount == null || amount.equals("")){
 					System.out.println(saleList.get(i).getName() + "のフォーマットが不正です");
 					return;
 				}
